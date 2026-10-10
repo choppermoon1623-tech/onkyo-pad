@@ -42,6 +42,12 @@ kbd{font-family:ui-monospace,Consolas,monospace;font-size:11px;background:#0005;
 .modesw button{border:0;background:none;padding:6px 12px;border-radius:7px;cursor:pointer;color:var(--sub);font-weight:700;font-size:14px;white-space:nowrap}
 .modesw button[aria-pressed=true]{background:var(--panel2);color:var(--text);box-shadow:0 1px 2px #0006}
 .modesw #mShow[aria-pressed=true]{background:var(--stop);color:#fff}
+.banksw{display:flex;align-items:center;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px}
+.banksw button{border:0;background:none;padding:6px 12px;border-radius:7px;cursor:pointer;color:var(--sub);font-weight:700;font-size:14px;white-space:nowrap;position:relative}
+.banksw button[aria-pressed=true]{background:var(--accent);color:#1a1205}
+.banksw button.live::after{content:"";position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 6px var(--ok)}
+.banksw kbd{margin:0 4px 0 2px}
+body:not([data-bank=se]) .se-only{display:none!important}
 
 /* ---------- パッドの並び（キーボード配列） ---------- */
 main{container-type:inline-size;padding:12px 14px 14px;max-width:1500px;margin:0 auto;
@@ -97,13 +103,16 @@ body.edit .pad .gear{display:block}
 }
 
 /* ---------- はじめに・追加・ヒント ---------- */
-#welcome{background:linear-gradient(135deg,#2a2210,#1b1e25 60%);border:1px solid #4a3a14;border-radius:14px;padding:18px 22px;margin-bottom:14px;display:flex;gap:24px;align-items:center;flex-wrap:wrap}
-#welcome h2{margin:0 0 10px;font-size:18px}
-#welcome ol{margin:0;padding:0;list-style:none;display:grid;gap:8px}
-#welcome li{display:flex;gap:10px;align-items:baseline;font-size:15px;color:var(--sub)}
-#welcome li b{color:var(--text)}
-#welcome .num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#1a1205;font-weight:800;display:grid;place-items:center;font-size:13px}
+.welbtns{display:flex;flex-direction:column;gap:10px}
+#seWelcome .btn{font-size:17px;padding:14px 22px;justify-content:center}
+#welcome,#seWelcome{background:linear-gradient(135deg,#2a2210,#1b1e25 60%);border:1px solid #4a3a14;border-radius:14px;padding:18px 22px;margin-bottom:14px;display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+#welcome h2,#seWelcome h2{margin:0 0 10px;font-size:18px}
+#welcome ol,#seWelcome ol{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+#welcome li,#seWelcome li{display:flex;gap:10px;align-items:baseline;font-size:15px;color:var(--sub)}
+#welcome li b,#seWelcome li b{color:var(--text)}
+#welcome .num,#seWelcome .num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#1a1205;font-weight:800;display:grid;place-items:center;font-size:13px}
 #welcome .btn{font-size:17px;padding:14px 22px}
+#seWelcome kbd{color:var(--text)}
 #drop{border:2px dashed var(--line);border-radius:12px;padding:14px;text-align:center;color:var(--sub);margin-top:12px;font-size:14px}
 #drop.over{border-color:var(--accent);color:var(--accent);background:#ffb02e0d}
 details.help{margin-top:10px;color:var(--sub);font-size:13.5px;line-height:1.8}
@@ -166,6 +175,11 @@ dialog::backdrop{background:#000b}
 <body class="edit">
 <header>
   <div class="brand">🎭 音響パッド</div>
+  <div class="banksw" role="group" aria-label="パッドの組">
+    <button id="bMain" aria-pressed="true" title="通常の組（BGM・曲など）。－キーで切り替え">🎵 通常</button>
+    <button id="bSe" aria-pressed="false" title="効果音の組。－キーで切り替え。切り替えても、鳴っている音はそのまま続きます">💥 効果音</button>
+    <kbd title="－キーで切り替え">－</kbd>
+  </div>
   <div class="group">
     <button class="btn stop" id="stopAll" title="鳴っている音をすべて今すぐ止める">■ 全部止める <kbd>Esc</kbd></button>
     <button class="btn fade" id="fadeAll" title="鳴っている音をすべて2秒かけて小さくして止める">▼ ゆっくり消す（2秒） <kbd>Space</kbd></button>
@@ -174,6 +188,7 @@ dialog::backdrop{background:#000b}
   <div class="spacer"></div>
   <div class="group edit-only">
     <label class="btn primary">＋ 音を追加<input type="file" class="addIn" accept="audio/*,.mp3,.wav,.m4a,.ogg,.aac,.flac" multiple hidden></label>
+    <button class="btn se-only seSetBtn" title="雷・雨・チャイム・拍子木など36種類の効果音を、この画面で作って空いているキーに入れます">🎁 効果音セット</button>
     <button class="btn" id="backupBtn" title="音と設定をまとめて1つのファイルに保存します">💾 バックアップ</button>
     <label class="btn" title="バックアップのファイルから元に戻します">📂 読み込む<input type="file" id="restoreIn" accept=".onkyopad" hidden></label>
   </div>
@@ -194,6 +209,20 @@ dialog::backdrop{background:#000b}
       </ol>
     </div>
     <label class="btn primary">＋ 音を追加<input type="file" class="addIn" accept="audio/*,.mp3,.wav,.m4a,.ogg,.aac,.flac" multiple hidden></label>
+  </section>
+  <section id="seWelcome" hidden>
+    <div>
+      <h2>効果音の組</h2>
+      <ol>
+        <li><span class="num">1</span><span><b>効果音セットを入れる</b>　雷・雨・チャイム・拍子木など36種類を、この画面で作ります（ダウンロード不要）</span></li>
+        <li><span class="num">2</span><span><b>自分の音も足せる</b>　「＋ 音を追加」で効果音のファイルも入れられます</span></li>
+        <li><span class="num">3</span><span><b>本番中は</b>　<kbd>－</kbd> キーで「🎵 通常」と行き来。BGM を鳴らしたまま効果音を出せます</span></li>
+      </ol>
+    </div>
+    <div class="welbtns">
+      <button class="btn primary seSetBtn">🎁 効果音セットを入れる</button>
+      <label class="btn">＋ 音を追加<input type="file" class="addIn" accept="audio/*,.mp3,.wav,.m4a,.ogg,.aac,.flac" multiple hidden></label>
+    </div>
   </section>
   <div id="kb"></div>
   <div id="othersBox" hidden><h3>キーなし・F キーの音</h3><div id="others"></div></div>
@@ -252,7 +281,7 @@ dialog::backdrop{background:#000b}
   </div>
 </dialog>
 <div id="trash" class="edit-only" title="パッドをここへドラッグすると削除"><span class="ico">🗑️</span><span class="lbl">ここに置くと削除</span></div>
-<div id="busy" hidden><div>💾 バックアップを読み込んでいます…<small id="busyMsg"></small></div></div>
+<div id="busy" hidden><div><span id="busyTitle"></span><small id="busyMsg"></small></div></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script>
@@ -269,6 +298,9 @@ const MAX_PADS = 300;          // 音を追加できる上限
 const MAX_IMPORT = 2000;       // バックアップ読込の上限（上限を設ける前のデータも戻せるよう広め）
 const $ = s => document.querySelector(s);
 const isEdit = () => document.body.classList.contains('edit');
+const BANKS = ['main', 'se'];   // 通常の組・効果音の組（キーは組ごとに使える）
+let bank = 'main';
+const inBank = p => p.bank === bank;
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
 /* ---------- 保存（IndexedDB：音のファイルごと保存） ---------- */
@@ -301,7 +333,7 @@ const DB = {
 };
 
 // 保存する項目だけを取り出す
-const record = p => ({ id: p.id, order: p.order, name: p.name, key: p.key, color: p.color, vol: p.vol, mode: p.mode,
+const record = p => ({ id: p.id, order: p.order, bank: p.bank, name: p.name, key: p.key, color: p.color, vol: p.vol, mode: p.mode,
   loop: p.loop, fadeIn: p.fadeIn, fadeOut: p.fadeOut, start: p.start, end: p.end, blob: p.blob });
 
 // 画面上の状態を正とし、保存できていない分（dirty / pendingDel）を次の保存でまとめて書く
@@ -347,12 +379,14 @@ function showSaveState() {
 // 保存データや読み込んだバックアップを、安全な値にそろえる
 function sanitize(d, usedKeys) {
   const num = (v, min, max, def) => Number.isFinite(+v) && v !== null && v !== '' ? Math.min(max, Math.max(min, +v)) : def;
+  const b = BANKS.includes(d.bank) ? d.bank : 'main';   // 組を持たない古いデータは「通常」
   let key = typeof d.key === 'string' && (KEYS.includes(d.key) || /^F([1-9]|1[0-2])$/.test(d.key)) ? d.key : '';
-  if (key && usedKeys.has(key)) key = '';
-  if (key) usedKeys.add(key);
+  if (key && usedKeys.has(b + key)) key = '';
+  if (key) usedKeys.add(b + key);
   return {
     id: typeof d.id === 'string' && d.id ? d.id : newId(),
     order: Math.floor(num(d.order, 0, 1e12, 0)),
+    bank: b,
     name: String(d.name ?? '音').slice(0, 40) || '音',
     key,
     color: COLORS.some(c => c[0] === d.color) ? d.color : COLORS[0][0],
@@ -605,6 +639,9 @@ function drawTime(p) {
 
 function tick() {
   pads.forEach(p => { if (p.voices.length) drawTime(p); });
+  // 組のボタンに、その組で鳴っている音があるかを出す
+  $('#bMain').classList.toggle('live', pads.some(p => p.bank === 'main' && p.voices.length));
+  $('#bSe').classList.toggle('live', pads.some(p => p.bank === 'se' && p.voices.length));
   if (dlg.open && editing && editing.voices.length) drawWave();
   requestAnimationFrame(tick);
 }
@@ -640,19 +677,21 @@ function rebuild() {
     const row = document.createElement('div');
     row.className = 'kbrow';
     [...r].forEach(k => {
-      const p = pads.find(x => x.key === k && !placed.has(x));
+      const p = pads.find(x => inBank(x) && x.key === k && !placed.has(x));
       if (p) placed.add(p);
       row.appendChild(p ? (p.el || makePadEl(p)) : makeSlot(k));
     });
     kb.appendChild(row);
   });
   // キーなし・F キー（万一キーが重なっていた音もここへ）
-  const others = pads.filter(p => !placed.has(p)).sort((a, b) => a.order - b.order);
+  const others = pads.filter(p => inBank(p) && !placed.has(p)).sort((a, b) => a.order - b.order);
   const o = $('#others');
   o.replaceChildren(...others.map(p => p.el || makePadEl(p)));
   $('#othersBox').hidden = !others.length;
-  $('#welcome').hidden = pads.length > 0;
-  pads.forEach(render);
+  const empty = !pads.some(inBank);
+  $('#welcome').hidden = !empty || bank !== 'main';
+  $('#seWelcome').hidden = !empty || bank !== 'se';
+  pads.forEach(p => { if (!p.el) makePadEl(p); render(p); });   // 見えていない組のパッドも、鳴らす・止めるときに要素を使う
 }
 
 /* ---------- パッドのドラッグ移動（編集モード） ---------- */
@@ -696,7 +735,7 @@ function endDrag(drop) {
 // key へ移す。そこに別のパッドがあれば場所を入れ替える（保存は1回でまとめて）
 function movePad(p, key, quiet) {
   if (key === p.key) return rebuild();
-  const other = key && pads.find(x => x !== p && x.key === key);
+  const other = key && pads.find(x => x !== p && x.bank === p.bank && x.key === key);
   if (other) other.key = p.key;
   p.key = key;
   rebuild();
@@ -724,7 +763,7 @@ document.addEventListener('pointerup', e => { if (drag && e.pointerId === drag.i
 document.addEventListener('pointercancel', e => { if (drag && e.pointerId === drag.id) endDrag(false); });
 
 function nextKey() {
-  const used = new Set(pads.map(p => p.key));
+  const used = new Set(pads.filter(inBank).map(p => p.key));
   return KEYS.find(k => !used.has(k)) || '';
 }
 
@@ -743,7 +782,8 @@ function addFiles(files, firstKey) {
     const p = {
       id: newId(), order: ++order,
       name: f.name.replace(/\.[^.]+$/, '').slice(0, 40),
-      key: i === 0 && firstKey && !pads.some(x => x.key === firstKey) ? firstKey : nextKey(),
+      bank,
+      key: i === 0 && firstKey && !pads.some(x => inBank(x) && x.key === firstKey) ? firstKey : nextKey(),
       color: COLORS[(order - 1) % COLORS.length][0],   // order は整数
       vol: 100, mode: 'toggle', loop: false, fadeIn: 0, fadeOut: 0, start: 0, end: 0,
       blob: f, buffer: null, voices: [], status: 'loading',
@@ -798,20 +838,25 @@ async function importBackup(file) {
   } catch (e) {
     return fail();
   }
-  if (!confirm(`バックアップから ${data.pads.length} 個の音を読み込みます。\n今あるパッドはすべて置き換わります。よろしいですか？`)) return;
+  if (!confirm(`バックアップから ${data.pads.length} 個の音を読み込みます。\n今あるパッドはすべて置き換わります（通常・効果音の両方）。よろしいですか？`)) return;
   if (restoring) return;
-  restoring = true;
-  if (dlg.open) dlg.close();
-  $('#busy').hidden = false;
-  document.querySelectorAll('header, main, #saveWarn, #trash').forEach(el => { el.inert = true; });
+  busy(true, '💾 バックアップを読み込んでいます…');
   try { await restore(file, data, len, fail); }
   finally {
-    restoring = false;
-    $('#busy').hidden = true;
-    document.querySelectorAll('header, main, #saveWarn, #trash').forEach(el => { el.inert = false; });
+    busy(false);
     pads.forEach(p => { if (p.status === 'loading' && !p.buffer) load(p); });   // 止めた読み込みをやり直す（失敗時）
     flush().catch(() => {});
   }
+}
+
+// 読込・効果音づくりの間は、画面を止めて保存も保留する
+function busy(on, title) {
+  restoring = on;
+  if (on && dlg.open) dlg.close();
+  $('#busyTitle').textContent = title || '';
+  $('#busyMsg').textContent = '';
+  $('#busy').hidden = !on;
+  document.querySelectorAll('header, main, #saveWarn, #trash').forEach(el => { el.inert = on; });
 }
 
 async function restore(file, data, len, fail) {
@@ -1111,8 +1156,9 @@ document.addEventListener('keydown', e => {
     else { const p = pads.find(x => x.el === focused); if (p && !e.repeat) trigger(p); }
     return;
   }
+  if (e.code === 'Minus' || e.code === 'NumpadSubtract') { e.preventDefault(); if (!e.repeat) setBank(bank === 'main' ? 'se' : 'main'); return; }
   const k = keyName(e);
-  const p = k && pads.find(x => x.key === k);
+  const p = k && pads.find(x => inBank(x) && x.key === k);
   if (p) { e.preventDefault(); if (!e.repeat) trigger(p); }   // 押しっぱなしで連打にならないように
 });
 
@@ -1141,6 +1187,18 @@ function setMode(show) {
   $('#mEdit').setAttribute('aria-pressed', !show);
   $('#mShow').setAttribute('aria-pressed', show);
 }
+// 組の切り替え。鳴っている音は止めない（BGM を流したまま効果音を出せる）
+function setBank(b) {
+  if (drag || b === bank) return;
+  bank = b;
+  document.body.dataset.bank = b;
+  $('#bMain').setAttribute('aria-pressed', b === 'main');
+  $('#bSe').setAttribute('aria-pressed', b === 'se');
+  try { localStorage.setItem('onkyo-pad-bank', b); } catch (_) {}
+  rebuild();
+}
+$('#bMain').onclick = () => setBank('main');
+$('#bSe').onclick = () => setBank('se');
 $('#mEdit').onclick = () => setMode(false);
 $('#mShow').onclick = () => setMode(true);
 // ボタンにフォーカスが残って Space で押されないように
@@ -1160,6 +1218,430 @@ function toast(msg, ms = 2600) {
   clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), ms);
 }
 
+/* ---------- 効果音セット（ファイルを使わず、この画面で合成する） ----------
+   1つずつ OfflineAudioContext で作り、音量をそろえて WAV にし、ふつうのパッドとして入れる */
+const SE_RATE = 44100;
+const SE = (() => {
+  const R = SE_RATE, rnd = (a, b) => a + Math.random() * (b - a);
+  // 音量の形。pts = [[秒, 値, 指数?], ...]（指数にすると自然に減っていく）
+  function amp(c, to, pts) {
+    const g = c.createGain(), p = g.gain;
+    p.setValueAtTime(0, 0);
+    pts.forEach(([t, v, ex]) => ex ? p.exponentialRampToValueAtTime(Math.max(v, 1e-4), t) : p.linearRampToValueAtTime(v, t));
+    g.connect(to);
+    return g;
+  }
+  const hit = (t, a, d, v = 1) => [[t, 0], [t + a, v], [t + a + d, 1e-4, 1], [t + a + d + .01, 0]];
+  const lvl = (c, to, v) => { const g = c.createGain(); g.gain.value = v; g.connect(to); return g; };
+  // 周波数は数値か [[秒, Hz, 直線?], ...]
+  function sweep(param, f) {
+    if (!Array.isArray(f)) { param.value = f; return; }
+    f.forEach(([t, v, lin], i) => i === 0 ? param.setValueAtTime(v, t) : lin ? param.linearRampToValueAtTime(v, t) : param.exponentialRampToValueAtTime(v, t));
+  }
+  function osc(c, to, type, f, t0, t1) {
+    const o = c.createOscillator();
+    o.type = type; sweep(o.frequency, f);
+    o.connect(to); o.start(t0); o.stop(t1);
+    return o;
+  }
+  function filt(c, to, type, f, q = 1) {
+    const b = c.createBiquadFilter();
+    b.type = type; b.Q.value = q; sweep(b.frequency, f);
+    b.connect(to);
+    return b;
+  }
+  function play(c, to, data, t0 = 0) {
+    const b = c.createBuffer(1, data.length, R);
+    b.copyToChannel(data, 0);
+    const s = c.createBufferSource();
+    s.buffer = b; s.connect(to); s.start(t0);
+    return s;
+  }
+  function noise(sec, kind = 'white') {
+    const d = new Float32Array(Math.ceil(sec * R));
+    let b0 = 0, b1 = 0, b2 = 0, last = 0;
+    for (let i = 0; i < d.length; i++) {
+      const w = Math.random() * 2 - 1;
+      if (kind === 'pink') { b0 = .99765 * b0 + w * .099046; b1 = .963 * b1 + w * .2965164; b2 = .57 * b2 + w * 1.0526913; d[i] = (b0 + b1 + b2 + w * .1848) * .2; }
+      else if (kind === 'brown') { last = (last + .02 * w) / 1.02; d[i] = last * 3.5; }
+      else d[i] = w;
+    }
+    return d;
+  }
+  // 鐘・チャイムの音（倍音ごとに減り方を変える）
+  function bell(c, to, t, f, dur, v, parts = [[1, 1], [2, .45], [3, .2], [4.2, .1], [5.4, .06]]) {
+    parts.forEach(([r, a, dd], i) => osc(c, amp(c, to, hit(t, .004, dd || dur / (1 + i * .6), v * a)), 'sine', f * r, t, t + dur + .1));
+  }
+  // 金管っぽい音（のこぎり波＋フィルターの開き）
+  function brass(c, to, t, f, len, v) {
+    const env = amp(c, to, [[t, 0], [t + .03, v], [t + len - .06, v * .8], [t + len, 0]]);
+    const lp = filt(c, env, 'lowpass', [[t, f * 1.5], [t + .06, f * 7], [t + len, f * 3.5]], .7);
+    osc(c, lp, 'sawtooth', f, t, t + len + .02);
+    osc(c, lp, 'sawtooth', f * 1.004, t, t + len + .02);
+  }
+  // 生の波形を直接書く音（虫・鳥・拍手など）
+  function raw(sec, fn) { const d = new Float32Array(Math.ceil(sec * R)); fn(d); return d; }
+  function chirpInto(d, t0, len, f0, f1, v, h2 = 0) {   // 周波数をなめらかに動かす短い音
+    const n = Math.floor(len * R), s = Math.floor(t0 * R);
+    let ph = 0;
+    for (let i = 0; i < n && s + i < d.length; i++) {
+      const x = i / n, f = f0 + (f1 - f0) * (x * x * (3 - 2 * x));
+      ph += 2 * Math.PI * f / R;
+      d[s + i] += v * Math.sin(Math.PI * x) ** 2 * (Math.sin(ph) + h2 * Math.sin(2 * ph));
+    }
+  }
+
+  const BLUE = '#2f6fdb', GREEN = '#1f8a70', AQUA = '#3d6f8a', PURPLE = '#6a3fb5', PINK = '#a4266b', RED = '#b3261e', ORANGE = '#c25b12', OCHRE = '#b8860b', GRAY = '#3b4252';
+  // key・name・color・dur（秒）・loop・mode・fadeIn/fadeOut・xf（ループのつなぎ目をなじませる秒数）・gain（そろえた後の大きさ）
+  return [
+    // ── 1〜0：合図・知らせ ──
+    { key: '1', name: '学校のチャイム', color: BLUE, dur: 10, mode: 'toggle', make(c, o) {
+      [659.3, 523.3, 587.3, 392, 392, 587.3, 659.3, 523.3].forEach((f, i) => bell(c, o, i * .95 + (i >= 4 ? .4 : 0), f, 2.6, .5));
+    } },
+    { key: '2', name: '非常ベル', color: BLUE, dur: 2, loop: true, mode: 'toggle', gain: .8, make(c, o) {
+      const am = lvl(c, o, .5);
+      osc(c, lvl(c, am.gain, .5), 'square', 25, 0, 2);   // ジリリ…（25回/秒で打つ）
+      [[2400, .5], [3120, .35], [4300, .2], [1210, .3]].forEach(([f, a]) => osc(c, lvl(c, am, a), 'triangle', f, 0, 2));
+    } },
+    { key: '3', name: '電話の着信', color: BLUE, dur: 3, loop: true, mode: 'toggle', gain: .8, make(c, o) {
+      const env = amp(c, o, [[0, 0], [.01, 1], [1, 1], [1.02, 0]]);
+      const am = lvl(c, env, .5);
+      osc(c, lvl(c, am.gain, .5), 'sine', 16, 0, 1.05);   // プルルル
+      osc(c, lvl(c, am, .6), 'triangle', 853, 0, 1.05);
+      osc(c, lvl(c, am, .4), 'sine', 960, 0, 1.05);
+    } },
+    { key: '4', name: '目覚まし時計', color: BLUE, dur: 1, loop: true, mode: 'toggle', gain: .55, make(c, o) {
+      const lp = filt(c, o, 'lowpass', 6000, .7);
+      [0, .12, .24, .36].forEach(t => osc(c, amp(c, lp, [[t, 0], [t + .005, .6], [t + .065, .6], [t + .07, 0]]), 'square', 2048, t, t + .08));
+    } },
+    { key: '5', name: 'ピンポン（正解）', color: BLUE, dur: 1.4, mode: 'restart', make(c, o) {
+      const lp = filt(c, o, 'lowpass', 4000, .7);
+      osc(c, amp(c, lp, hit(0, .005, .35, .6)), 'square', 1318.5, 0, .5);
+      osc(c, amp(c, lp, hit(.2, .005, 1.1, .6)), 'square', 1046.5, .2, 1.4);
+      bell(c, o, 0, 1318.5, .5, .4, [[1, 1], [2, .3]]);
+      bell(c, o, .2, 1046.5, 1.1, .4, [[1, 1], [2, .3]]);
+    } },
+    { key: '6', name: 'ブブー（不正解）', color: BLUE, dur: 1, mode: 'restart', gain: .85, make(c, o) {
+      const env = amp(c, filt(c, o, 'lowpass', 1800, .7), [[0, 0], [.01, 1], [.2, 1], [.22, 0], [.3, 0], [.31, 1], [.9, 1], [.95, 0]]);
+      osc(c, env, 'sawtooth', 140, 0, 1); osc(c, env, 'sawtooth', 146, 0, 1);
+    } },
+    { key: '7', name: '玄関チャイム', color: BLUE, dur: 2.8, mode: 'restart', make(c, o) {
+      bell(c, o, 0, 784, 1.8, .6, [[1, 1], [2, .15], [3, .04]]);
+      bell(c, o, .6, 622.3, 2.1, .6, [[1, 1], [2, .15], [3, .04]]);
+    } },
+    { key: '8', name: '時報', color: BLUE, dur: 5.6, mode: 'toggle', make(c, o) {
+      [0, 1, 2].forEach(t => { osc(c, amp(c, o, [[t, 0], [t + .005, .5], [t + .1, .5], [t + .13, 0]]), 'sine', 440, t, t + .15); });
+      osc(c, amp(c, o, hit(3, .005, 2.4, .6)), 'sine', 880, 3, 5.6);
+      osc(c, amp(c, o, hit(3, .005, 1.2, .08)), 'sine', 1760, 3, 5);
+    } },
+    { key: '9', name: 'ファンファーレ', color: BLUE, dur: 2.4, mode: 'restart', make(c, o) {
+      [0, .14, .28].forEach(t => brass(c, o, t, 392, .12, .5));
+      [[523.3, .5], [392, .3], [329.6, .3], [261.6, .3]].forEach(([f, v]) => brass(c, o, .42, f, 1.7, v));
+    } },
+    { key: '0', name: 'ジャジャーン（衝撃）', color: RED, dur: 3.4, mode: 'restart', make(c, o) {
+      const lp = filt(c, o, 'lowpass', [[0, 3500], [.32, 3000], [3.2, 700]], .7);
+      [[0, .16, .3], [.32, .25, 2.6]].forEach(([t, len, dec]) => {
+        const env = amp(c, lp, [[t, 0], [t + .01, .25], [t + len, .18], [t + len + dec, 1e-4, 1], [t + len + dec + .01, 0]]);
+        [65.4, 130.8, 155.6, 196, 261.6, 311.1, 392].forEach(f => { osc(c, env, 'sawtooth', f * .997, t, t + len + dec); osc(c, env, 'sawtooth', f * 1.003, t, t + len + dec); });
+        osc(c, amp(c, o, hit(t, .005, .9, .8)), 'sine', [[t, 80], [t + .5, 55]], t, t + 1.2);
+      });
+      play(c, amp(c, filt(c, o, 'highpass', 5000), hit(.32, .002, 2, .4)), noise(3));
+    } },
+
+    // ── Q〜P：天気・自然・身のまわり ──
+    { key: 'Q', name: '雷', color: AQUA, dur: 6.5, mode: 'overlap', make(c, o) {
+      play(c, amp(c, filt(c, o, 'bandpass', 2500, .5), hit(.05, .003, .35, .8)), noise(1));   // ピシャッ
+      const pts = [[0, 0], [.07, 1]];
+      for (let t = .5; t < 6; t += rnd(.3, .7)) pts.push([t, rnd(.2, .9) * (1 - t / 7)]);
+      pts.push([6.4, 0]);
+      const br = noise(6.5, 'brown');
+      play(c, amp(c, filt(c, o, 'lowpass', 260, .7), pts), br);   // ゴロゴロ
+      play(c, amp(c, filt(c, o, 'lowpass', 1200), [[0, 0], [.08, .5], [.6, .15], [1.6, .2], [3, 0]]), noise(3, 'pink'));
+    } },
+    { key: 'W', name: '風', color: AQUA, dur: 12, xf: 2, loop: true, mode: 'toggle', fadeIn: 1, fadeOut: 2, gain: .7, make(c, o) {
+      const T = 14, bp = filt(c, o, 'bandpass', 500, 1.8), pts = [[0, .5]], fp = [[0, 500]];
+      for (let t = 1; t < T; t += rnd(.8, 1.8)) { pts.push([t, rnd(.25, 1)]); fp.push([t, rnd(280, 950), 1]); }
+      sweep(bp.frequency, fp);
+      play(c, amp(c, bp, pts), noise(T, 'pink'));
+      const wh = filt(c, o, 'bandpass', 1500, 9), wp = [[0, 1500]];   // ヒューという鳴り
+      for (let t = 1.5; t < T; t += rnd(1.5, 2.5)) wp.push([t, rnd(1100, 2300), 1]);
+      sweep(wh.frequency, wp);
+      play(c, lvl(c, wh, .9), noise(T));
+    } },
+    { key: 'E', name: '雨', color: AQUA, dur: 10, xf: 1, loop: true, mode: 'toggle', fadeIn: 1, fadeOut: 2, gain: .6, make(c, o) {
+      play(c, lvl(c, filt(c, filt(c, o, 'lowpass', 7000), 'highpass', 500), .5), noise(11, 'pink'));
+      const drops = raw(11, d => {   // ぱらぱら当たる粒
+        for (let k = 0; k < 11 * 90; k++) {
+          const s = Math.floor(Math.random() * (d.length - 2000)), f = rnd(1500, 6500), tau = rnd(.0015, .005), a = rnd(.05, .35);
+          for (let i = 0; i < 1500; i++) d[s + i] += a * Math.sin(2 * Math.PI * f * i / R) * Math.exp(-i / R / tau);
+        }
+      });
+      play(c, filt(c, o, 'highpass', 900), drops);
+    } },
+    { key: 'R', name: '波', color: AQUA, dur: 13, xf: 1.5, loop: true, mode: 'toggle', fadeIn: 1.5, fadeOut: 2, gain: .7, make(c, o) {
+      const T = 14.5, lp = filt(c, o, 'lowpass', 400, .5), fp = [[0, 400]], ap = [[0, .2]];
+      for (let t = 0; t < T; t += 6.5) { fp.push([t + 2.6, 2600], [t + 6.5, 450]); ap.push([t + 2.6, 1, 0], [t + 4, .6], [t + 6.5, .2]); }
+      sweep(lp.frequency, fp);
+      play(c, amp(c, lp, ap), noise(T, 'pink'));
+      const hp = filt(c, o, 'highpass', 3000), sp = [[0, 0]];   // 砕ける泡
+      for (let t = 0; t < T; t += 6.5) sp.push([t + 2.4, 0], [t + 2.9, .25], [t + 5, 0]);
+      play(c, amp(c, hp, sp), noise(T));
+    } },
+    { key: 'T', name: '夜の虫', color: GREEN, dur: 10, xf: 1, loop: true, mode: 'toggle', fadeIn: 1, fadeOut: 2, gain: .5, make(c, o) {
+      play(c, o, raw(11, d => {
+        [[4300, .62, .5], [4800, .81, .35], [5300, .7, .25]].forEach(([f, per, v]) => {   // コオロギ：短い粒が3〜4回
+          for (let t = rnd(0, per); t < 10.8; t += per * rnd(.9, 1.1)) {
+            const n = 3 + (Math.random() < .5), a = v * rnd(.6, 1);
+            for (let k = 0; k < n; k++) chirpInto(d, t + k * .04, .025, f, f * .98, a);
+          }
+        });
+        for (let t = rnd(0, 1); t < 10; t += rnd(2.5, 3.5)) {   // スズムシ：リーン
+          const len = rnd(1, 1.8), s = Math.floor(t * R), n = Math.floor(len * R);
+          for (let i = 0; i < n && s + i < d.length; i++) {
+            const x = i / n, e = Math.min(1, x * 20) * (1 - x) ** 1.5;
+            d[s + i] += .35 * e * (.5 + .5 * Math.sin(2 * Math.PI * 38 * i / R)) * Math.sin(2 * Math.PI * 4050 * i / R);
+          }
+        }
+      }));
+    } },
+    { key: 'Y', name: '鳥のさえずり', color: GREEN, dur: 6, mode: 'toggle', fadeOut: 1, gain: .6, make(c, o) {
+      play(c, o, raw(6, d => {
+        [[2600, 4200, 0], [3800, 6000, .7]].forEach(([lo, hi, off]) => {
+          for (let t = off + rnd(0, .4); t < 5.2; t += rnd(.9, 1.6)) {
+            const n = 2 + Math.floor(Math.random() * 5), up = Math.random() < .5;
+            for (let k = 0; k < n; k++) {
+              const f0 = rnd(lo, hi), f1 = up ? f0 * rnd(1.1, 1.4) : f0 * rnd(.6, .85);
+              chirpInto(d, t + k * rnd(.09, .14), rnd(.05, .1), f0, f1, rnd(.3, .6), .15);
+            }
+          }
+        });
+      }));
+    } },
+    { key: 'U', name: '心臓の音', color: RED, dur: .8, loop: true, mode: 'toggle', fadeOut: 1, make(c, o) {
+      const lp = filt(c, o, 'lowpass', 300, .7);
+      osc(c, amp(c, lp, hit(.01, .008, .14, 1)), 'sine', [[.01, 75], [.18, 42]], .01, .2);    // ドッ
+      osc(c, amp(c, lp, hit(.29, .006, .11, .7)), 'sine', [[.29, 85], [.42, 45]], .29, .45);  // クン
+    } },
+    { key: 'I', name: '時計の音', color: GRAY, dur: 2, loop: true, mode: 'toggle', gain: .7, make(c, o) {
+      [[0, 3600], [1, 2600]].forEach(([t, f]) => {
+        play(c, amp(c, filt(c, o, 'bandpass', f, 6), hit(t, .0005, .02, 1)), noise(.05), t);
+        osc(c, amp(c, o, hit(t, .0005, .012, .3)), 'sine', f * .7, t, t + .03);
+      });
+    } },
+    { key: 'O', name: 'ノック', color: OCHRE, dur: 1, mode: 'restart', make(c, o) {
+      [0, .2, .42].forEach((t, i) => {
+        const v = [1, .85, .95][i];
+        osc(c, amp(c, o, hit(t, .002, .08, v)), 'sine', [[t, 190], [t + .08, 150]], t, t + .12);
+        osc(c, amp(c, o, hit(t, .001, .04, .35 * v)), 'triangle', 430, t, t + .06);
+        play(c, amp(c, filt(c, o, 'lowpass', 2500), hit(t, .001, .015, .6 * v)), noise(.03), t);
+      });
+    } },
+    { key: 'P', name: '拍手', color: OCHRE, dur: 6, mode: 'toggle', fadeOut: 1.5, gain: .75, make(c, o) {
+      const d = raw(6, d => {
+        for (let t = 0; t < 6; t += 1 / rnd(60, 140)) {
+          const dens = Math.min(1, t / .8) * Math.min(1, (6 - t) / 1.8);   // だんだん増えて、終わりに減る
+          if (Math.random() > dens) continue;
+          const s = Math.floor(t * R), a = rnd(.2, 1), tau = rnd(.002, .005);
+          for (let i = 0; i < 600 && s + i < d.length; i++) d[s + i] += a * (Math.random() * 2 - 1) * Math.exp(-i / R / tau);
+        }
+      });
+      play(c, filt(c, filt(c, o, 'highpass', 600), 'peaking', 1800, .8), d);
+    } },
+
+    // ── A〜L：演出 ──
+    { key: 'A', name: 'キラキラ（魔法）', color: PURPLE, dur: 2.6, mode: 'overlap', make(c, o) {
+      const pent = [1, 9 / 8, 5 / 4, 3 / 2, 5 / 3];
+      for (let i = 0; i < 22; i++) {
+        const f = 1046.5 * pent[i % 5] * 2 ** Math.floor(i / 5) / (i > 14 ? 2 : 1);
+        bell(c, o, i * .05 + rnd(0, .02), f, .7, .25, [[1, 1], [2.76, .25]]);
+      }
+      play(c, amp(c, filt(c, o, 'highpass', 7000), [[0, 0], [.6, .15], [2.4, 0]]), noise(2.6));
+    } },
+    { key: 'S', name: 'ヒュン（通過）', color: PURPLE, dur: .9, mode: 'overlap', make(c, o) {
+      const bp = filt(c, o, 'bandpass', [[0, 300], [.35, 3500], [.85, 400]], 3);
+      play(c, amp(c, bp, [[0, 0], [.35, 1], [.85, 0]]), noise(.9));
+    } },
+    { key: 'D', name: 'シャラーン（場面転換）', color: PURPLE, dur: 3, mode: 'restart', make(c, o) {
+      const sc = [0, 2, 4, 5, 7, 9, 11];
+      for (let i = 0; i < 22; i++) {
+        const f = 261.6 * 2 ** ((sc[i % 7] + 12 * Math.floor(i / 7)) / 12), t = i * .035;
+        osc(c, amp(c, o, hit(t, .002, 1.4, .3)), 'triangle', f, t, t + 1.6);
+        osc(c, amp(c, o, hit(t, .002, .6, .08)), 'sine', f * 2, t, t + .8);
+      }
+    } },
+    { key: 'F', name: '爆発', color: RED, dur: 3.6, mode: 'overlap', make(c, o) {
+      play(c, amp(c, filt(c, o, 'lowpass', [[0, 4000], [.3, 1200], [3.2, 150]], .7), [[0, 0], [.005, 1], [.3, .7], [3.4, 1e-4, 1]]), noise(3.6, 'brown'));
+      play(c, amp(c, filt(c, o, 'bandpass', 1500, .6), hit(0, .001, .15, .8)), noise(.3));
+      osc(c, amp(c, o, hit(0, .005, 1.2, 1)), 'sine', [[0, 90], [1, 30]], 0, 1.4);
+    } },
+    { key: 'G', name: '落下（ヒュ〜ドスン）', color: RED, dur: 2.5, mode: 'restart', make(c, o) {
+      osc(c, amp(c, o, [[0, 0], [.1, .35], [1.4, .35], [1.5, 0]]), 'sine', [[0, 2200], [1.5, 350]], 0, 1.55);
+      osc(c, amp(c, o, hit(1.55, .003, .35, 1)), 'sine', [[1.55, 90], [1.9, 40]], 1.55, 2.1);
+      play(c, amp(c, filt(c, o, 'lowpass', 400), hit(1.55, .002, .4, .8)), noise(.6, 'brown'), 1.55);
+    } },
+    { key: 'H', name: 'ポヨン', color: PINK, dur: .9, mode: 'overlap', make(c, o) {
+      const s = osc(c, amp(c, o, hit(0, .005, .7, .8)), 'sine', [[0, 220], [.5, 420]], 0, .8);
+      const depth = c.createGain();
+      sweep(depth.gain, [[0, 120], [.7, 1]]);
+      osc(c, depth, 'sine', 13, 0, .8);
+      depth.connect(s.frequency);
+    } },
+    { key: 'J', name: 'ずっこけ', color: PINK, dur: 3, mode: 'restart', make(c, o) {
+      [[196, 0, .42], [185, .45, .42], [174.6, .9, .42], [164.8, 1.35, 1.4]].forEach(([f, t, len]) => {
+        const env = amp(c, o, [[t, 0], [t + .04, .6], [t + len - .08, .5], [t + len, 0]]);
+        const lp = filt(c, env, 'lowpass', [[t, 300], [t + .15, 1800], [t + len, 450]], 2);
+        const s = osc(c, lp, 'sawtooth', f, t, t + len + .02);
+        if (len > 1) { const dv = c.createGain(); sweep(dv.gain, [[t, 0], [t + .3, 0, 1], [t + .6, 5, 1]]); osc(c, dv, 'sine', 6, t, t + len); dv.connect(s.frequency); }
+      });
+    } },
+    { key: 'K', name: '緊張（低い音）', color: PURPLE, dur: 10, xf: 2, loop: true, mode: 'toggle', fadeIn: 2, fadeOut: 2, gain: .7, make(c, o) {
+      const lp = filt(c, o, 'lowpass', 350, 1.5);
+      const lfo = lvl(c, lp.frequency, 150);
+      osc(c, lfo, 'sine', .13, 0, 12);
+      [55, 55.6, 77.8].forEach(f => osc(c, lvl(c, lp, .3), 'sawtooth', f, 0, 12));
+      const tr = lvl(c, o, .025);   // かすかな高い音のゆらぎ
+      osc(c, lvl(c, tr.gain, .02), 'sine', .4, 0, 12);
+      osc(c, tr, 'sine', 1244.5, 0, 12);
+    } },
+    { key: 'L', name: '不気味', color: PURPLE, dur: 6, mode: 'toggle', fadeOut: 1.5, make(c, o) {
+      const env = amp(c, o, [[0, 0], [2, 1], [4.2, .8], [5.9, 0]]);
+      [[880, 5.1], [932.3, 6.3], [1318.5, 4.4]].forEach(([f, vr], i) => {
+        const s = osc(c, lvl(c, env, .18), 'sine', [[0, f], [6, f * (i === 1 ? .94 : 1.03)]], 0, 6);
+        const dv = lvl(c, s.frequency, f * .008);
+        osc(c, dv, 'sine', vr, 0, 6);
+      });
+      osc(c, lvl(c, env, .3), 'sine', 61, 0, 6);
+      play(c, amp(c, filt(c, o, 'bandpass', [[0, 400], [3, 1400], [6, 300]], 6), [[0, 0], [3, .4], [6, 0]]), noise(6));
+    } },
+
+    // ── Z〜M：打つ・鳴らす ──
+    { key: 'Z', name: 'パンチ', color: ORANGE, dur: .4, mode: 'overlap', make(c, o) {
+      play(c, amp(c, filt(c, o, 'bandpass', 1000, .8), hit(0, .001, .06, 1)), noise(.15));
+      play(c, amp(c, filt(c, o, 'highpass', 3000), hit(0, .0005, .02, .5)), noise(.05));
+      osc(c, amp(c, o, hit(0, .002, .15, 1)), 'sine', [[0, 150], [.1, 50]], 0, .2);
+    } },
+    { key: 'X', name: '拍子木', color: OCHRE, dur: 1.2, mode: 'restart', make(c, o) {
+      [0, .3].forEach(t => {
+        [[1850, .06, 1], [2950, .04, .6], [4100, .03, .4], [1100, .08, .3]].forEach(([f, d, a]) => osc(c, amp(c, o, hit(t, .0005, d, a * .5)), 'sine', f, t, t + d + .05));
+        play(c, amp(c, filt(c, o, 'highpass', 2000), hit(t, .0003, .006, .7)), noise(.02), t);
+      });
+    } },
+    { key: 'C', name: 'ドラムロール', color: ORANGE, dur: 5, mode: 'restart', make(c, o) {
+      const roll = raw(2.4, d => {
+        for (let t = 0; t < 2.2; t += 1 / 28 * rnd(.9, 1.1)) {
+          const s = Math.floor(t * R), a = (.25 + .75 * (t / 2.2) ** 1.5) * rnd(.8, 1);
+          for (let i = 0; i < 4000 && s + i < d.length; i++) {
+            const e = Math.exp(-i / R / .03);
+            d[s + i] += a * e * ((Math.random() * 2 - 1) * .7 + .3 * Math.sin(2 * Math.PI * 190 * i / R));
+          }
+        }
+      });
+      play(c, filt(c, o, 'lowpass', 7000), roll);
+      const t = 2.25;   // ジャーン
+      play(c, amp(c, filt(c, o, 'highpass', 4000), hit(t, .002, 2.6, .9)), noise(2.8), t);
+      osc(c, amp(c, o, hit(t, .002, .4, 1)), 'sine', [[t, 80], [t + .3, 45]], t, t + .5);
+      play(c, amp(c, filt(c, o, 'bandpass', 2000, .7), hit(t, .001, .12, .7)), noise(.2), t);
+    } },
+    { key: 'V', name: '和太鼓', color: OCHRE, dur: 2, mode: 'overlap', make(c, o) {
+      osc(c, amp(c, o, hit(0, .003, 1.3, 1)), 'sine', [[0, 95], [.4, 60]], 0, 1.5);
+      osc(c, amp(c, o, hit(0, .003, .4, .3)), 'sine', 140, 0, .5);
+      play(c, amp(c, filt(c, o, 'lowpass', 300), hit(0, .002, .25, .6)), noise(.4, 'brown'));
+      play(c, amp(c, filt(c, o, 'bandpass', 800), hit(0, .001, .04, .3)), noise(.08));
+    } },
+    { key: 'B', name: 'お寺の鐘', color: OCHRE, dur: 9, mode: 'overlap', make(c, o) {
+      play(c, amp(c, filt(c, o, 'lowpass', 800), hit(0, .002, .15, .3)), noise(.3));
+      // 近い音どうしがうなって「ゴーン…うぉんうぉん」
+      bell(c, o, 0, 130, 8.8, .6, [[.5, .6, 8.5], [1, 1, 7], [1.004, .8, 7], [1.47, .5, 4], [2, .35, 3], [2.0035, .3, 3], [2.74, .2, 2], [3.6, .12, 1.2], [4.9, .06, .8]]);
+    } },
+    { key: 'N', name: '救急車', color: RED, dur: 2.6, xf: .3, loop: true, mode: 'toggle', fadeIn: 1, fadeOut: 1.5, gain: .65, make(c, o) {
+      const f = [[0, 960]];
+      [.65, 1.3, 1.95, 2.6].forEach((t, i) => f.push([t - 1e-4, i % 2 ? 770 : 960, 1], [t, i % 2 ? 960 : 770, 1]));   // ピーポー
+      const lp = filt(c, o, 'lowpass', 2500, .7);
+      osc(c, lvl(c, lp, .4), 'square', f, 0, 3);
+      osc(c, lvl(c, o, .3), 'sine', f, 0, 3);
+    } },
+    { key: 'M', name: 'ガラスが割れる', color: RED, dur: 2, mode: 'overlap', make(c, o) {
+      play(c, amp(c, filt(c, o, 'highpass', 2000), hit(0, .001, .3, .8)), noise(.5));
+      for (let i = 0; i < 40; i++) {
+        const t = i < 28 ? rnd(0, .25) : rnd(.35, 1.2), d = rnd(.08, .6);
+        osc(c, amp(c, o, hit(t, .0005, d, rnd(.05, .18))), 'sine', rnd(2000, 9000), t, t + d + .05);
+      }
+    } },
+  ];
+})();
+
+// 1つ作る：合成 → ループのつなぎ目をなじませる → 音量をそろえる → WAV
+async function makeSe(r) {
+  const extra = r.xf || 0, n = Math.ceil((r.dur + extra) * SE_RATE);
+  const c = new OfflineAudioContext(1, n, SE_RATE);
+  const out = c.createGain();
+  out.connect(c.destination);
+  r.make(c, out);
+  const buf = await c.startRendering();
+  let d = buf.getChannelData(0);
+  if (extra) {   // はみ出した終わりの部分を、先頭に重ねてからつなぐ（ループで途切れない）
+    const L = Math.round(r.dur * SE_RATE), X = n - L, y = d.slice(0, L);
+    for (let i = 0; i < X && i < L; i++) { const k = i / X; y[i] = d[i] * Math.sin(k * Math.PI / 2) + d[L + i] * Math.cos(k * Math.PI / 2); }
+    d = y;
+  }
+  // いちばん大きいところ（50ms ごとの実効値）と最大値の両方を見て、大きさをそろえる
+  let peak = 0, loud = 0;
+  const W = Math.round(.05 * SE_RATE);
+  for (let i = 0; i < d.length; i += W) {
+    let sq = 0;
+    for (let j = i; j < i + W && j < d.length; j++) { sq += d[j] * d[j]; if (Math.abs(d[j]) > peak) peak = Math.abs(d[j]); }
+    loud = Math.max(loud, Math.sqrt(sq / W));
+  }
+  const g = peak ? Math.min(.9 / peak, .3 / loud) * (r.gain || 1) : 1;
+  for (let i = 0; i < d.length; i++) d[i] *= g;
+  return wavBlob(d, SE_RATE);
+}
+
+function wavBlob(d, rate) {
+  const v = new DataView(new ArrayBuffer(44 + d.length * 2));
+  const str = (o, s) => [...s].forEach((ch, i) => v.setUint8(o + i, ch.charCodeAt(0)));
+  str(0, 'RIFF'); v.setUint32(4, 36 + d.length * 2, true); str(8, 'WAVE'); str(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  str(36, 'data'); v.setUint32(40, d.length * 2, true);
+  for (let i = 0; i < d.length; i++) v.setInt16(44 + i * 2, Math.max(-1, Math.min(1, d[i])) * 32767, true);
+  return new Blob([v], { type: 'audio/wav' });
+}
+
+// 効果音の組の空いているキーへ入れる（キーが使われていたら「キーなし」に）
+async function addSeSet() {
+  if (restoring) return;
+  if (pads.length + SE.length > MAX_PADS) return toast(`音は ${MAX_PADS} 個までです。使わない音を消してから入れてください`, 5000);
+  const mine = pads.filter(p => p.bank === 'se');
+  if (mine.length && !confirm(`効果音セット（${SE.length} 種類）を入れます。\n今ある効果音はそのまま残り、使われているキーの音は「キーなし」に入ります。よろしいですか？`)) return;
+  setBank('se');
+  busy(true, '🎁 効果音を作っています…');
+  const added = [];
+  let order = pads.reduce((m, p) => Math.max(m, p.order), 0);
+  try {
+    for (const [i, r] of SE.entries()) {
+      $('#busyMsg').textContent = `${i + 1} / ${SE.length}　${r.name}`;
+      const blob = await makeSe(r);
+      added.push({
+        id: newId(), order: ++order, bank: 'se', name: r.name,
+        key: pads.some(p => p.bank === 'se' && p.key === r.key) ? '' : r.key,
+        color: r.color, vol: 100, mode: r.mode || 'toggle', loop: !!r.loop, fadeIn: r.fadeIn || 0, fadeOut: r.fadeOut || 0, start: 0, end: 0,
+        blob, buffer: null, voices: [], status: 'loading',
+      });
+    }
+  } catch (e) {
+    busy(false);
+    return toast('効果音を作れませんでした（このブラウザでは使えないかもしれません）', 6000);
+  }
+  pads.push(...added);
+  busy(false);
+  rebuild();
+  save(...added).catch(() => {});
+  added.forEach(load);
+  toast(`効果音を ${added.length} 種類入れました。⚙ で音量やキーを変えられます`, 4000);
+}
+document.querySelectorAll('.seSetBtn').forEach(b => { b.onclick = addSeSet; });
+
 /* ---------- 起動 ---------- */
 (async () => {
   try { const m = localStorage.getItem('onkyo-pad-master'); if (m !== null) { $('#master').value = m; $('#masterVal').textContent = $('#master').value; } } catch (_) {}
@@ -1177,7 +1659,10 @@ function toast(msg, ms = 2600) {
     DB.db = null;
   }
   showSaveState();
-  rebuild();
+  let b0 = 'main';
+  try { b0 = localStorage.getItem('onkyo-pad-bank') === 'se' ? 'se' : 'main'; } catch (_) {}
+  bank = '';
+  setBank(b0);
   pads.forEach(load);
   requestAnimationFrame(tick);
 })();
